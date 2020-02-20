@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Scrutin</title>
+
+    <link rel="stylesheet" media="all" th:href="@{/css/dashboard.css}"/>
+    <link href="https://fonts.googleapis.com/css?family=Lato&display=swap" rel="stylesheet">
+
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script th:src="@{/js/update.js}"></script>
+</head>
+<body>
+<form id="mettreAJourResultats" action="#" th:action="@{/postResults}" th:object="${resultsDto}" method="post">
+    <select th:field="*{bureau}" id="bureau">
+        <option th:each="bureau : ${bureaux}" th:value="${bureau.id}" th:text="${#numbers.formatInteger(bureau.id,2) + ' - ' + bureau.libelle}">
+    </select><br />
+
+    <div class="row">
+        <label for="inscrits">Inscrits : </label><input th:field="*{inscrits}" id="inscrits" type="number" min="0" step="1" />
+    </div>
+    <div class="row">
+        <label for="votants">Votants : </label><input th:field="*{votants}" id="votants" type="number" min="0" step="1" />
+    </div>
+
+    <div id="listesCandidates">
+        <div class="liste row" th:each="listeDto,listeStat : *{listesCandidates}">
+            <label th:for="*{'liste' + listesCandidates[__${listeStat.index}__].liste.id}" th:text="*{listesCandidates[__${listeStat.index}__].liste.teteDeListe}" /><input th:field="*{listesCandidates[__${listeStat.index}__].nombreVoix}" th:id="*{'liste' + listesCandidates[__${listeStat.index}__].liste.id}" th:value="*{listesCandidates[__${listeStat.index}__].nombreVoix}" type="number" min="0" step="1" />
+            <input th:field="*{listesCandidates[__${listeStat.index}__].liste.id}" th:value="*{listesCandidates[__${listeStat.index}__].liste.id}" type="hidden"/>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <label for="blancs">Blancs : </label><input th:field="*{blancs}" id="blancs" type="number" min="0" step="1" />
+    </div>
+    <div class="row">
+        <label for="nuls">Nuls : </label><input th:field="*{nuls}" id="nuls" type="number" min="0" step="1" />
+    </div>
+    <p>
+        <button id="envoyer" value="Envoyer">Valider</button>
+    </p>
+</form>
+</body>
+</html>

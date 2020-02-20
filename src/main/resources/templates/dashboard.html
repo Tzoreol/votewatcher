@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Scrutin</title>
+
+    <link rel="stylesheet" media="all" th:href="@{/css/dashboard.css}"/>
+    <link href="https://fonts.googleapis.com/css?family=Lato&display=swap" rel="stylesheet">
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script th:src="@{/js/dashboard.js}"></script>
+
+</head>
+<body>
+    <h1><img th:src="@{/images/bars.png}" />Amboise - Scrutin du 15 mars 2020</h1>
+    <h3 id="maj" th:text=" ${'Mise à jour ' + #temporals.format(miseAJour,'HH:mm:ss')}">Mise à jour</h3>
+    <table id="scrutin">
+        <thead>
+            <th>
+                <td th:each="bureau : ${bureaux}">
+                <span class="numeroBureau" th:text="${#numbers.formatInteger(bureau.id,2)}" />
+                <span class="nomBureau" th:text="${bureau.libelle}" />
+                </td>
+            </th>
+        </thead>
+        <tbody>
+            <tr class="grise">
+                <td>Inscrits</td>
+                <th:block th:each="bureau : ${bureaux}">
+                    <td th:id="${'b' + bureau.id + 'l99'}" class="voix" th:text="${inscrits.get(bureau.id - 1).voix}" />
+                </th:block>
+                <td id="t99" class="inscrits gras" th:text="${totalInscrits}" />
+            </tr>
+            <tr class="grise">
+                <td>Votants</td>
+                <th:block th:each="bureau : ${bureaux}">
+                    <td th:if="${inscrits.get(bureau.id - 1).voix > 0}" th:id="${'b' + bureau.id + 'l98'}" th:with="pourcentage=(${votants.get(bureau.id - 1).voix}/${inscrits.get(bureau.id - 1).voix})">
+                        <span class="pourcentage" th:text="${#numbers.formatPercent(pourcentage,1,2)}" />
+                        <span class="voix" th:text="${votants.get(bureau.id - 1).voix}" />
+                    </td>
+                    <td th:unless="${inscrits.get(bureau.id - 1).voix > 0}" th:id="${'b' + bureau.id + 'l98'}">
+                        <span class="pourcentage" th:text="${#numbers.formatPercent(0,1,2)}" />
+                        <span class="voix" th:text="0" />
+                    </td>
+                </th:block>
+                <td id="t98" th:if="${totalInscrits} > 0" class="gras" th:with="pourcentage=(${totalVotants}/${totalInscrits})">
+                    <span class="pourcentage" th:text="${#numbers.formatPercent(pourcentage,1,2)}" />
+                    <span class="voix" th:text="${totalVotants}" />
+                </td>
+                <td id="t98" th:unless="${totalInscrits} > 0" class="gras">
+                    <span class="pourcentage" th:text="${#numbers.formatPercent(0,1,2)}" />
+                    <span class="voix" th:text="0" />
+                </td>
+            </tr>
+            <tr  class="candidat" style="border-bottom: 4px solid teal" th:each="liste : ${listes}">
+                <td>
+                    <span class="nomDeListe" th:text="${liste.nomDeListe}" />
+                    <span class="teteDeListe" th:text="${liste.teteDeListe}" />
+                </td>
+                <th:block th:each="bureau : ${bureaux}" th:with="votes=${scrutinRepository.recupererResultatsParListe(liste.id)}">
+                    <td th:if="${(exprimes.get(bureau.id - 1)) > 0}" th:id="${'b' + bureau.id + 'l' + liste.id}" class="noSideBorder" th:with="pourcentage=(${votes.get(bureau.id - 1).voix}/(${exprimes.get(bureau.id - 1)}))">
+                        <span class="pourcentage" th:text="${#numbers.formatPercent(pourcentage,1,2)}" />
+                        <span class="voix" th:text="${votes.get(bureau.id - 1).voix}" />
+                    </td>
+                    <td th:unless="${(exprimes.get(bureau.id - 1)) > 0}" th:id="${'b' + bureau.id + 'l' + liste.id}" class="noSideBorder">
+                        <span class="pourcentage" th:text="${#numbers.formatPercent(0,1,2)}" />
+                        <span class="voix" th:text="0" />
+                    </td>
+                </th:block>
+                <td th:if="${(totalVotants - totalBlancs - totalNuls) > 0}" th:id="${'t' + liste.id}" class="gras" th:with="pourcentage=(${scrutinRepository.recupererTotalParListe(liste.id)}/(${totalVotants} - ${totalBlancs} - ${totalNuls}))">
+                    <span class="pourcentage" th:text="${#numbers.formatPercent(pourcentage,1,2)}" />
+                    <span class="voix" th:text="${scrutinRepository.recupererTotalParListe(liste.id)}" />
+                </td>
+                <td th:unless="${(totalVotants - totalBlancs - totalNuls) > 0}" th:id="${'t' + liste.id}" class="gras">
+                    <span class="pourcentage" th:text="${#numbers.formatPercent(0,1,2)}" />
+                    <span class="voix" th:text="0" />
+                </td>
+            </tr>
+            <tr class="grise">
+                <td>Blancs</td>
+                <th:block th:each="bureau : ${bureaux}">
+                    <td th:if="${votants.get(bureau.id - 1).voix > 0}" th:id="${'b' + bureau.id + 'l97'}" th:with="pourcentage=(${blancs.get(bureau.id - 1).voix}/${votants.get(bureau.id - 1).voix})">
+                        <span class="pourcentage" th:text="${#numbers.formatPercent(pourcentage,1,2)}" />
+                        <span class="voix" th:text="${blancs.get(bureau.id - 1).voix}" />
+                    </td>
+                    <td th:unless="${votants.get(bureau.id - 1).voix > 0}" th:id="${'b' + bureau.id + 'l97'}">
+                        <span class="pourcentage" th:text="${#numbers.formatPercent(0,1,2)}" />
+                        <span class="voix" th:text="0" />
+                    </td>
+                </th:block>
+                <td id="t97" th:if="${totalVotants > 0}" class="gras" th:with="pourcentage=(${totalBlancs}/${totalVotants})">
+                    <span class="pourcentage" th:text="${#numbers.formatPercent(pourcentage,1,2)}" />
+                    <span class="voix" th:text="${totalBlancs}" />
+                </td>
+                <td id="t97" th:unless="${totalVotants > 0}" class="gras">
+                    <span class="pourcentage" th:text="${#numbers.formatPercent(0,1,2)}" />
+                    <span class="voix" th:text="0" />
+                </td>
+            </tr>
+            <tr class="grise">
+                <td>Nuls</td>
+                <th:block th:each="bureau : ${bureaux}">
+                    <td th:if="${votants.get(bureau.id - 1).voix > 0}" th:id="${'b' + bureau.id + 'l96'}" th:with="pourcentage=(${nuls.get(bureau.id - 1).voix}/${votants.get(bureau.id - 1).voix})">
+                        <span class="pourcentage" th:text="${#numbers.formatPercent(pourcentage,1,2)}" />
+                        <span class="voix" th:text="${nuls.get(bureau.id - 1).voix}" />
+                    </td>
+                    <td th:unless="${votants.get(bureau.id - 1).voix > 0}" th:id="${'b' + bureau.id + 'l96'}">
+                        <span class="pourcentage" th:text="${#numbers.formatPercent(0,1,2)}" />
+                        <span class="voix" th:text="0" />
+                    </td>
+                </th:block>
+                <td id="t96" th:if="${totalVotants > 0}" class="gras" th:with="pourcentage=(${totalNuls}/${totalVotants})">
+                    <span class="pourcentage" th:text="${#numbers.formatPercent(pourcentage,1,2)}" />
+                    <span class="voix" th:text="${totalNuls}" />
+                </td>
+                <td id="t96" th:unless="${totalVotants > 0}" class="gras">
+                    <span class="pourcentage" th:text="${#numbers.formatPercent(0,1,2)}" />
+                    <span class="voix" th:text="0" />
+                </td>
+            </tr>
+            <tr class="grise">
+                <td>Dépouillement</td>
+                <th:block th:each="bureau : ${bureaux}">
+                    <td th:if="${votants.get(bureau.id - 1).voix > 0}" th:id="${'b' + bureau.id + 'd'}" th:with="pourcentage=(${exprimes.get(bureau.id - 1) + blancs.get(bureau.id - 1).voix + nuls.get(bureau.id - 1).voix}/${votants.get(bureau.id - 1).voix})">
+                        <span class="pourcentage" th:text="${#numbers.formatPercent(pourcentage,1,2)}" />
+                        <span class="voix" th:text="${exprimes.get(bureau.id - 1) + blancs.get(bureau.id - 1).voix + nuls.get(bureau.id - 1).voix}" />
+                    </td>
+                    <td th:unless="${votants.get(bureau.id - 1).voix > 0}" th:id="${'b' + bureau.id + 'd'}">
+                        <span class="pourcentage" th:text="${#numbers.formatPercent(0,1,2)}" />
+                        <span class="voix" th:text="0" />
+                    </td>
+                </th:block>
+                <td id="d" th:if="${totalVotants > 0}" class="gras" th:with="pourcentage=(${totalExprimes + totalBlancs + totalNuls}/${totalVotants})">
+                    <span class="pourcentage" th:text="${#numbers.formatPercent(pourcentage,1,2)}" />
+                    <span class="voix" th:text="${totalExprimes + totalBlancs + totalNuls}" />
+                </td>
+                <td id="d" th:unless="${totalVotants > 0}" class="gras">
+                    <span class="pourcentage" th:text="${#numbers.formatPercent(0,1,2)}" />
+                    <span class="voix" th:text="0" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

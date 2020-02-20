@@ -1,0 +1,132 @@
+body {
+    font-family: Lato;
+    background-color: whitesmoke;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 0;
+}
+h3 {
+    text-align: center;
+    font-size: .75em;
+}
+
+.gras {
+    text-align: center;
+    font-weight: bold;
+}
+
+#scrutin {
+    border-collapse: separate;
+    border-spacing: 0 15px;
+    margin: auto;
+}
+
+#scrutin span {
+    display: block;
+}
+
+#scrutin thead tr {
+    text-align: center;
+}
+
+#scrutin thead .numeroBureau {
+    display: block;
+    font-size: 1.25em;
+    font-weight: bold;
+}
+
+#scrutin thead .nomBureau {
+    font-size: .75em;
+}
+
+#scrutin .grise {
+    color: silver;
+}
+
+#scrutin .grise .voix {
+    font-size: .75em;
+    text-align: center;
+}
+
+#scrutin .grise .pourcentage {
+    font-size: 1.15em;
+    text-align: center;
+    color: darkgrey;
+}
+
+#scrutin .candidat td {
+    padding-top: 2em;
+    padding-right: 1.5em;
+    padding-bottom: 1.5em;
+    font-size: 1.25em;
+    border-bottom: 5px solid teal;
+    text-align: center;
+}
+
+#scrutin .candidat td .nomDeListe {
+    color: teal;
+    text-align: left;
+}
+
+#scrutin .candidat td .teteDeListe {
+    text-align: left;
+    color: gray;
+}
+
+#scrutin .candidat td .voix {
+    font-size: .75em;
+    color: gray;
+}
+
+#mettreAJourResultats {
+    width: 90%;
+    background-color: white;
+    margin: auto;
+    padding: 1em;
+    box-shadow: 0 5px 5px 3px #BBBBBB;
+    background-color: white;
+}
+
+select {
+    width: 100%;
+    height: 2em;
+    border: none;
+    font-size: 1.5em;
+    color: #94c132;
+}
+
+.row {
+    margin-top: 10px;
+}
+
+.listesCandidates {
+    font-size: 1.5em;
+}
+
+label {
+    display: inline-block;
+    height: 1.5em;
+}
+
+input {
+    text-align: center;
+    height: 1.5em;
+    font-size: 1.1em;
+    width: 25%;
+    float: right;
+    border: none;
+    border-bottom: 1px solid gray;
+}
+
+button {
+    background-color: #08748b;
+    border: none;
+    padding: .5em;
+    margin: auto;
+    min-width: 25%;
+    display: block;
+    color: white;
+    font-size: 1.5em;
+}
